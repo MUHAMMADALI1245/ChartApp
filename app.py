@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, flash
 from werkzeug.utils import secure_filename
 import pandas as pd
 import tempfile
-import plotly.graph_objects as go
+import plotly.express as px
 import plotly.offline as pyo
 
 app = Flask(__name__)
@@ -17,9 +17,8 @@ def allowed_file(filename):
 
 @app.route('/')
 def dashboard():
-    headings_source = []    
+    headings_source = []
     uploaded_data = None
-    sunburst_chart = None  # Initialize as None
 
     if os.path.exists(app.config['UPLOAD_FOLDER']):
         for file in os.listdir(app.config['UPLOAD_FOLDER']):
@@ -34,21 +33,13 @@ def dashboard():
                     # Filter out "GT Data" from the uploaded data
                     uploaded_data = data[data['Source Group'] != 'GT']
 
-                     #Adding the new hierarchy level "Subcategory1" under "Email"
-                    #uploaded_data.loc[uploaded_data['Source of Business'] == 'Email', 'Subcategory1'] = 'Subcategory1'
-                   # uploaded_data.loc[uploaded_data['Source of Business'] == 'Email', 'Subcategory1 Total Revenue'] = uploaded_data.loc[uploaded_data['Source of Business'] == 'Email', 'Total Revenue'].sum()
+    # Plotly sunburst chart
+    sunburst_chart = None  # Initialize as None
 
-                    # Your provided Sunburst chart code
-                    fig = go.Figure(go.Sunburst(
-                        labels=["Phone", "Email", "Hotel website" ],
-                        labels=["Walk-in"],
-                        parents=["Direct Booking", "Direct Booking", "Direct Booking" ],
-                        parents=["Walk-in" ],
-                        branchvalues="remainder",
-                    ))
-                    fig.update_layout(margin=dict(t=2, l=3, r=4, b=2))
-
-                    sunburst_chart = pyo.plot(fig, output_type='div', include_plotlyjs=False)
+    if uploaded_data is not None:
+        fig = px.sunburst(uploaded_data, path=["Source Group", "Source of Business", ], values="Total Revenue", color="Mix %")
+        fig.update_traces(textinfo="label+value")  # Display values instead of percentages
+        sunburst_chart = pyo.plot(fig, output_type='div', include_plotlyjs=False)
 
     return render_template('dashboard.html', headings_source=headings_source, uploaded_data=uploaded_data, sunburst_chart=sunburst_chart)
 
