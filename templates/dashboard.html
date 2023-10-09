@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <!-- Include Plotly.js for rendering the sunburst chart -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+</head>
+<body>
+    <h1>Dashboard</h1>
+
+    <!-- Display a message if no files are uploaded -->
+    {% if not headings_source %}
+    <p>No data uploaded yet.</p>
+    {% else %}
+    <!-- Display uploaded data -->
+    <table>
+        <thead>
+            <tr>
+                <!-- Display column headings -->
+                {% for heading in headings_source %}
+                <th>{{ heading }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Loop through the uploaded data and display rows -->
+            {% for index, row in uploaded_data.iterrows() %}
+            <tr>
+                <!-- Display row data -->
+                <td>{{ row['Source Group'] }}</td>
+                <td>{{ row['Source of Business'] }}</td>
+                <td>{{ row['Room Nights'] }}</td>
+                <td>{{ row['Revenue'] }}</td>
+                <td>{{ row['ADR'] }}</td>
+                <td>{{ row['Other Revenue'] }}</td>
+                <td>{{ row['Total Revenue'] }}</td>
+                <td>{{ row['Mix %'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Display the Plotly sunburst chart -->
+    <div id="sunburst-chart">
+        {{ sunburst_chart|safe }}
+    </div>
+    {% endif %}
+
+    <!-- Add the file upload form -->
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+        <input type="file" name="excel_files[]" multiple>
+        <input type="submit" value="Upload">
+    </form>
+</body>
+</html>
